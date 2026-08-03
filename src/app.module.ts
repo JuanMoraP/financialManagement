@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
     // Carga el .env y lo deja disponible para toda la app
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
 
     // Configura la conexión a la DB
@@ -20,9 +21,10 @@ import { UsersModule } from './users/users.module';
         url: config.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: config.get<string>('NODE_ENV') !== 'production',
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        ssl:
+          config.get<string>('NODE_ENV') === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
     }),
 

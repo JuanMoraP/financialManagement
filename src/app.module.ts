@@ -4,6 +4,10 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
+import { FinancialProfileModule } from './financial-profile/financial-profile.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { CategoriesModule } from './categories/categories.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +33,14 @@ import { UsersModule } from './users/users.module';
     }),
 
     UsersModule,
+
+    FinancialProfileModule,
+
+    TransactionModule,
+
+    CategoriesModule,
+
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -8,4 +8,12 @@ export class UsersService {
   getAllUsers() {
     return this.usersRepository.getAllUsers();
   }
+
+  getUserById(id: string) {
+    return this.usersRepository.getUserById(id);
+  }
+
+  getUserByEmail(email: string) {
+    return this.usersRepository.getUserByEmail(email);
+  }
 }

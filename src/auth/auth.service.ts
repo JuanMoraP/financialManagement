@@ -13,8 +13,11 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(newUser.password, 10);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirmPassword, ...newUserInfo } = newUser;
+
     return await this.usersRepository.signUp({
-      ...newUser,
+      ...newUserInfo,
       password: hashedPassword,
     });
   }

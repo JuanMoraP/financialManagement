@@ -3,10 +3,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { UsersRepository } from '../users/users.repository';
+import { User } from '../users/entities/users.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RefreshToken])],
+  imports: [TypeOrmModule.forFeature([RefreshToken, User])],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, UsersRepository],
 })
 export class AuthModule {}

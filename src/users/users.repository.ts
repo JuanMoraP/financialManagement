@@ -1,8 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
 import { Repository } from 'typeorm';
 import { SignUpDto } from '../auth/dto/signup.dto';
+import { userLoginDto } from '../auth/dto/login.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersRepository {
@@ -10,22 +18,40 @@ export class UsersRepository {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
   ) {}
 
-  getAllUsers() {
-    const allUsers = this.usersRepository.find();
-    return allUsers;
+  async getAllUsers() {
+    const allUsers = await this.usersRepository.find();
+    if (!allUsers.length) throw new NotFoundException('No hay usuarios');
+
+    const usersNoPassword = allUsers.map(({ password, ...user }) => user);
+
+    return usersNoPassword;
   }
 
-  getUserById(id: string) {
-    const user = this.usersRepository.findOne({ where: { id: id } });
-    return user;
+  async getUserById(id: string) {
+    const user = await this.usersRepository.findOne({ where: { id: id } });
+    if (!user)
+      throw new NotFoundException(
+        'El id del usuario no fue encontrado o no éxiste en la base de datos',
+      );
+
+    const { password, ...userNoPassword } = user;
+
+    return userNoPassword;
   }
 
-  getUserByEmail(email: string) {
-    const user = this.usersRepository.findOne({ where: { email } });
-    return user;
+  async getUserByEmail(email: string) {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user)
+      throw new NotFoundException(
+        'El email no fue encontrado o no éxiste en la base de datos',
+      );
+
+    const { password, ...userNoPassword } = user;
+
+    return userNoPassword;
   }
 
-  async signUp(newUser: SignUpDto) {
+  async signUp(newUser: Omit<SignUpDto, 'confirmPassword'>) {
     const email = (newUser.email || '').trim().toLocaleLowerCase();
     const emailExist = await this.getUserByEmail(email);
     if (emailExist) {
@@ -36,5 +62,17 @@ export class UsersRepository {
     await this.usersRepository.save(user);
 
     return 'El usuario ha sido creado correctamente';
+  }
+
+  async login(credentials: userLoginDto) {
+    const { email, password } = credentials;
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user)
+      throw new NotFoundException('El usuario no tiene una cuenta activa');
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      throw new UnauthorizedException('La contraseña es incorrecta');
+
+    return 'Acceso concedido';
   }
 }

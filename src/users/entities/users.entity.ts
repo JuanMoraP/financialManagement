@@ -26,9 +26,6 @@ export class User {
   password!: string;
 
   @Column()
-  confirmPassword!: string;
-
-  @Column()
   birthdate!: Date;
 
   @Column()

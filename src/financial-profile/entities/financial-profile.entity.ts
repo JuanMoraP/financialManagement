@@ -36,6 +36,9 @@ export class FinancialProfile {
   @Column()
   currency!: string;
 
+  @Column()
+  preferredBank!: string;
+
   @CreateDateColumn()
   createdAt!: Date;
 

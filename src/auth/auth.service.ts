@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersRepository } from '../users/users.repository';
 import { SignUpDto } from './dto/signup.dto';
 import * as bcrypt from 'bcrypt';
+import { userLoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,5 +21,9 @@ export class AuthService {
       ...newUserInfo,
       password: hashedPassword,
     });
+  }
+
+  async logim(credentials: userLoginDto) {
+    return await this.usersRepository.login(credentials);
   }
 }

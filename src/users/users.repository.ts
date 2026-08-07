@@ -3,14 +3,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
 import { Repository } from 'typeorm';
 import { SignUpDto } from '../auth/dto/signup.dto';
-import { userLoginDto } from '../auth/dto/login.dto';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersRepository {
@@ -64,15 +61,8 @@ export class UsersRepository {
     return 'El usuario ha sido creado correctamente';
   }
 
-  async login(credentials: userLoginDto) {
-    const { email, password } = credentials;
+  async login(email: string) {
     const user = await this.usersRepository.findOne({ where: { email } });
-    if (!user)
-      throw new NotFoundException('El usuario no tiene una cuenta activa');
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      throw new UnauthorizedException('La contraseña es incorrecta');
-
-    return 'Acceso concedido';
+    return user;
   }
 }

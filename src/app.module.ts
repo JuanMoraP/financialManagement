@@ -31,15 +31,10 @@ import { AuthModule } from './auth/auth.module';
             : false,
       }),
     }),
-
     UsersModule,
-
     FinancialProfileModule,
-
     TransactionModule,
-
     CategoriesModule,
-
     AuthModule,
   ],
   controllers: [AppController],

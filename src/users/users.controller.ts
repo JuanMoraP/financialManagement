@@ -21,12 +21,14 @@ export class UsersController {
 
   //Guardian para solo admin, hace falta que no reciba la contraseña
   @Get('email/:email')
+  @UseGuards(AuthGuard)
   getUserByEmail(@Param('email') email: string) {
     return this.usersService.getUserByEmail(email);
   }
 
   //Guardian para solo admin, hace falta que no reciba la contraseña
   @Get(':id')
+  @UseGuards(AuthGuard)
   getUserById(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.getUserById(id);
   }

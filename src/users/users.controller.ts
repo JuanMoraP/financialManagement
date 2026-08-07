@@ -1,5 +1,12 @@
-import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -7,6 +14,7 @@ export class UsersController {
 
   //Guardian para solo admin, hace falta que no reciba la contraseña
   @Get()
+  @UseGuards(AuthGuard)
   getAllUsers() {
     return this.usersService.getAllUsers();
   }

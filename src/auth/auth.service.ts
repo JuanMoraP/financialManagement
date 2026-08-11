@@ -137,7 +137,11 @@ export class AuthService {
       payload.useremail,
     );
     await this.saveRefreshToken(payload.sub, tokens.refreshToken);
-
     return tokens;
+  }
+
+  async logout(userId: string) {
+    await this.refreshTokenRepository.delete({ userId: { id: userId } });
+    return { message: 'Sesión cerrada con éxito' };
   }
 }

@@ -1,8 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signup.dto';
 import { userLoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { AuthGuard } from './guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,5 +26,10 @@ export class AuthController {
     return await this.authService.refresh(refreshToken);
   }
 
-  //logout
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  async logout(@Req() request: Request) {
+    console.log('request');
+    return await this.authService.logout(request['user'].sub);
+  }
 }

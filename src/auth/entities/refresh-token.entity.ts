@@ -14,7 +14,7 @@ export class RefreshToken {
   id!: string;
 
   @Column()
-  token!: string;
+  hashedToken!: string;
 
   @CreateDateColumn()
   createdAt!: Date;

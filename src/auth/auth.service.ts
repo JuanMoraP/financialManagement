@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/users.entity';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -100,5 +101,43 @@ export class AuthService {
       });
       await this.refreshTokenRepository.save(newRefreshToken);
     }
+  }
+
+  async refresh(refreshToken: RefreshTokenDto) {
+    const tokenString = refreshToken.refreshToken;
+
+    // 1. Verificar la firma y que no haya expirado
+    let payload: { sub: string; username: string; useremail: string };
+    try {
+      payload = await this.jwtService.verifyAsync(tokenString, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException('Refresh token invalido o expirado');
+    }
+
+    // 2. Buscar el refresh token guardado para este usuario
+    const storedToken = await this.refreshTokenRepository.findOne({
+      where: { userId: { id: payload.sub } },
+    });
+    if (!storedToken) {
+      throw new UnauthorizedException('No hay sesión activa para este usuario');
+    }
+
+    // 3. Comparar el token recibido contra el hash guardado
+    const matches = await bcrypt.compare(tokenString, storedToken.hashedToken);
+    if (!matches) {
+      throw new UnauthorizedException('Refresh token invalido');
+    }
+
+    // Todo OK: generamos tokens nuevos y rotamos el refresh token
+    const tokens = await this.generateTokens(
+      payload.sub,
+      payload.username,
+      payload.useremail,
+    );
+    await this.saveRefreshToken(payload.sub, tokens.refreshToken);
+
+    return tokens;
   }
 }

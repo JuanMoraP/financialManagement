@@ -10,12 +10,20 @@ import { SignUpDto } from './dto/signup.dto';
 import * as bcrypt from 'bcrypt';
 import { userLoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { Repository } from 'typeorm';
+import { User } from '../users/entities/users.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private jwtService: JwtService,
+    private configService: ConfigService,
+    @InjectRepository(RefreshToken)
+    private refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   async signUp(newUser: SignUpDto) {
@@ -41,12 +49,56 @@ export class AuthService {
     if (!isMatch)
       throw new UnauthorizedException('La contraseña es incorrecta');
 
+    const tokens = await this.generateTokens(user.id, user.name, user.email);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    return { message: 'Acceso concedido', tokens };
+  }
+
+  //Método que genera ambos tokens
+  private async generateTokens(
+    userId: string,
+    username: string,
+    useremail: string,
+  ) {
     const payload = {
-      sub: user.id,
-      username: user.name,
-      useremail: user.email,
+      sub: userId,
+      username,
+      useremail,
     };
-    const token = await this.jwtService.signAsync(payload);
-    return { message: 'Acceso concedido', token };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: '1h',
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  //Método nuevo: hashea el refresh token y lo guarda (o actualiza) en BD
+  private async saveRefreshToken(userId: string, refreshToken: string) {
+    const hashedToken = await bcrypt.hash(refreshToken, 10);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    const existing = await this.refreshTokenRepository.findOne({
+      where: { userId: { id: userId } },
+    });
+    if (existing) {
+      existing.hashedToken = hashedToken;
+      existing.expiresAt = expiresAt;
+      await this.refreshTokenRepository.save(existing);
+    } else {
+      const newRefreshToken = this.refreshTokenRepository.create({
+        hashedToken: hashedToken,
+        expiresAt,
+        userId: { id: userId } as User,
+      });
+      await this.refreshTokenRepository.save(newRefreshToken);
+    }
   }
 }

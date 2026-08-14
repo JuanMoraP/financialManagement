@@ -8,4 +8,12 @@ export class CategoriesService {
   addCategories() {
     return this.categoriesRepository.addCategories();
   }
+
+  getAllCategories() {
+    return this.categoriesRepository.getAllCategories();
+  }
+
+  getMyCategories(id: string) {
+    return this.categoriesRepository.getMyCategories(id);
+  }
 }

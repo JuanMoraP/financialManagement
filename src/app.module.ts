@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -8,6 +8,7 @@ import { FinancialProfileModule } from './financial-profile/financial-profile.mo
 import { TransactionModule } from './transaction/transaction.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AuthModule } from './auth/auth.module';
+import { CategoriesService } from './categories/categories.service';
 
 @Module({
   imports: [
@@ -40,4 +41,23 @@ import { AuthModule } from './auth/auth.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements OnApplicationBootstrap {
+  private readonly logger = new Logger(AppModule.name);
+  constructor(private readonly categoriesService: CategoriesService) {}
+  async onApplicationBootstrap() {
+    try {
+      await this.categoriesService.addCategories();
+      this.logger.log('Categorias cargadas con éxito');
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error('Error al cargar las categorías', error.stack);
+      } else {
+        this.logger.error(
+          'Error al cargar las categorias (tipo desconocido',
+          String(error),
+        );
+      }
+      throw error;
+    }
+  }
+}

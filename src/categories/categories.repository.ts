@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/categories.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import categories from '../utils/categories.json';
 
 @Injectable()
@@ -45,5 +49,17 @@ export class CategoriesRepository {
     });
     const allCategories = [...categories, ...myCategories];
     return allCategories;
+  }
+
+  async createCategorie(userId: string, newCategorie: string) {
+    const categorieExist = await this.categoriesRepository.findOne({
+      where: { name: newCategorie, user: userId ? { id: userId } : IsNull() },
+    });
+    if (categorieExist) throw new BadRequestException('La categoria ya existe');
+
+    const createCat = this.categoriesRepository.create({
+      name: newCategorie.name,
+      user: userId,
+    });
   }
 }

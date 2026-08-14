@@ -2,11 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FinancialProfile } from '../../financial-profile/entities/financial-profile.entity';
 import { RefreshToken } from '../../auth/entities/refresh-token.entity';
+import { Category } from '../../categories/entities/categories.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -52,4 +54,7 @@ export class User {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.userId)
   refreshToken!: RefreshToken;
+
+  @OneToMany(() => Category, (category) => category.user, { nullable: true })
+  category!: Category;
 }

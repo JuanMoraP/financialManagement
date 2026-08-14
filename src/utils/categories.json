@@ -1,0 +1,13 @@
+[
+  { "category": "Rent/Mortgage" },
+  { "category": "Food/Groceries" },
+  { "category": "Restaurants/Delivery" },
+  { "category": "Utilities" },
+  { "category": "Healthcare" },
+  { "category": "Entertainment" },
+  { "category": "Suscriptions" },
+  { "category": "Clothes/Personal Care" },
+  { "category": "Pets" },
+  { "category": "Savings/Investment" },
+  { "category": "Other" }
+]

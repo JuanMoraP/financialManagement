@@ -37,6 +37,7 @@ export class Transaction {
   @JoinColumn()
   financialProfile!: FinancialProfile;
 
-  @ManyToOne(() => Category, (category) => category.transactionId)
-  categoryId!: Category;
+  @ManyToOne(() => Category, (category) => category.transaction)
+  @JoinColumn()
+  category!: Category;
 }

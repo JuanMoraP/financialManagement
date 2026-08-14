@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 
 @Controller('categories')
@@ -7,11 +7,15 @@ export class CategoriesController {
 
   //Admin
   @Get()
-  async getAllCategories() {}
+  async getAllCategories() {
+    return this.categoriesService.getAllCategories();
+  }
 
   //User
-  @Get()
-  async getMyCategories() {}
+  @Get(':id')
+  async getMyCategories(@Param('id', ParseUUIDPipe) id: string) {
+    return this.categoriesService.getMyCategories(id);
+  }
 
   //user
   @Post('create-categorie')

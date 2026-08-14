@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/categories.entity';
 import { Repository } from 'typeorm';
@@ -28,5 +28,22 @@ export class CategoriesRepository {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`No fue posible cargar las categorías: ${message}`);
     }
+  }
+
+  async getAllCategories() {
+    const categories = await this.categoriesRepository.find();
+    if (!categories.length)
+      throw new NotFoundException('No se encontraron categorias');
+
+    return categories;
+  }
+
+  async getMyCategories(id: string) {
+    const categories = await this.getAllCategories();
+    const myCategories = await this.categoriesRepository.find({
+      where: { user: { id } },
+    });
+    const allCategories = [...categories, ...myCategories];
+    return allCategories;
   }
 }

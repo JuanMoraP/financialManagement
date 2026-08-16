@@ -29,7 +29,6 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard)
   async logout(@Req() request: Request) {
-    console.log('request');
     return await this.authService.logout(request['user'].sub);
   }
 }

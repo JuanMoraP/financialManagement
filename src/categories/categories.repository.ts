@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/categories.entity';
 import { IsNull, Repository } from 'typeorm';
 import categories from '../utils/categories.json';
+import { CreateCategorieDto } from './dto/create-category.dto';
 
 @Injectable()
 export class CategoriesRepository {
@@ -35,7 +36,9 @@ export class CategoriesRepository {
   }
 
   async getAllCategories() {
-    const categories = await this.categoriesRepository.find();
+    const categories = await this.categoriesRepository.find({
+      where: { user: IsNull() },
+    });
     if (!categories.length)
       throw new NotFoundException('No se encontraron categorias');
 
@@ -51,15 +54,20 @@ export class CategoriesRepository {
     return allCategories;
   }
 
-  async createCategorie(userId: string, newCategorie: string) {
+  async createCategorie(userId: string, newCategorie: CreateCategorieDto) {
     const categorieExist = await this.categoriesRepository.findOne({
-      where: { name: newCategorie, user: userId ? { id: userId } : IsNull() },
+      where: {
+        name: newCategorie.name,
+        user: userId ? { id: userId } : IsNull(),
+      },
     });
     if (categorieExist) throw new BadRequestException('La categoria ya existe');
 
     const createCat = this.categoriesRepository.create({
       name: newCategorie.name,
-      user: userId,
+      user: userId ? { id: userId } : null,
     });
+    await this.categoriesRepository.save(createCat);
+    return 'La categoria ha sido creada correctamente';
   }
 }

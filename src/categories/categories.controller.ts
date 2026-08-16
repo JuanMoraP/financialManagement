@@ -1,5 +1,19 @@
-import { Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CategoriesService } from './categories.service';
+import { CreateCategorieDto } from './dto/create-category.dto';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Controller('categories')
 export class CategoriesController {
@@ -19,5 +33,12 @@ export class CategoriesController {
 
   //user
   @Post('create-categorie')
-  async createCategorie() {}
+  @UseGuards(AuthGuard)
+  async createCategorie(
+    @Body() newCategorie: CreateCategorieDto,
+    @Req() request: Request,
+  ) {
+    const userId = request['user'].sub;
+    return await this.categoriesService.createCategorie(userId, newCategorie);
+  }
 }

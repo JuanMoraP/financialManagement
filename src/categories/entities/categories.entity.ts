@@ -22,5 +22,5 @@ export class Category {
 
   @ManyToOne(() => User, (user) => user.category, { nullable: true })
   @JoinColumn()
-  user!: User;
+  user!: User | null;
 }

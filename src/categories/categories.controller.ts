@@ -4,6 +4,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -12,8 +13,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CreateCategorieDto } from './dto/create-category.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -35,10 +36,19 @@ export class CategoriesController {
   @Post('create-categorie')
   @UseGuards(AuthGuard)
   async createCategorie(
-    @Body() newCategorie: CreateCategorieDto,
+    @Body() newCategorie: CreateCategoryDto,
     @Req() request: Request,
   ) {
     const userId = request['user'].sub;
-    return await this.categoriesService.createCategorie(userId, newCategorie);
+    return await this.categoriesService.createCategory(userId, newCategorie);
+  }
+
+  @Delete('delete-category/:id')
+  async deleteCategory(
+    @Req() request: Request,
+    @Param('id', ParseUUIDPipe) categoryId: string,
+  ) {
+    const userId: string = request['user'].sub;
+    return this.categoriesService.deleteCategory(userId, categoryId);
   }
 }

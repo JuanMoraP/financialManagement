@@ -8,6 +8,7 @@ import { Category } from './entities/categories.entity';
 import { IsNull, Repository } from 'typeorm';
 import categories from '../utils/categories.json';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update.category.dto';
 
 @Injectable()
 export class CategoriesRepository {
@@ -69,6 +70,20 @@ export class CategoriesRepository {
     });
     await this.categoriesRepository.save(createCat);
     return 'La categoria ha sido creada correctamente';
+  }
+
+  async updateCategory(
+    userId: string,
+    categoryId: string,
+    updateInfo: UpdateCategoryDto,
+  ) {
+    const category = await this.categoriesRepository.findOne({
+      where: { id: categoryId, user: { id: userId } },
+    });
+    if (!category) throw new NotFoundException('Categoría no encontrada');
+    const mergeCategory = this.categoriesRepository.merge(category, updateInfo);
+    const savedCategory = await this.categoriesRepository.save(mergeCategory);
+    return { message: 'Categoría guardada', savedCategory };
   }
 
   async deleteCategory(userId: string, categoryId: string) {

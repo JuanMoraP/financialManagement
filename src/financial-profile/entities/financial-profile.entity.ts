@@ -15,28 +15,28 @@ export class FinancialProfile {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ default: 0 })
   initialAmount!: number;
 
-  @Column()
+  @Column({ default: 0 })
   currentAmount!: number;
 
-  @Column()
+  @Column({ default: 0 })
   currentIncome!: number;
 
-  @Column()
+  @Column({ default: 0 })
   currentSpent!: number;
 
-  @Column()
+  @Column({ default: 0 })
   montlySavingsGoal!: number;
 
-  @Column()
+  @Column({ default: 0 })
   montlySavingsPercentage!: string;
 
-  @Column()
+  @Column({ nullable: true })
   currency!: string;
 
-  @Column()
+  @Column({ nullable: true })
   preferredBank!: string;
 
   @CreateDateColumn()

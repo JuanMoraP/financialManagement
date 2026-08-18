@@ -1,12 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
+  Body,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -31,5 +39,22 @@ export class UsersController {
   @UseGuards(AuthGuard)
   getUserById(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.getUserById(id);
+  }
+
+  @Patch('update-user')
+  @UseGuards(AuthGuard)
+  updateUser(@Req() request: Request, @Body() updatedInfo: UpdateUserDto) {
+    const userId = request['user'].sub;
+    return this.usersService.updateUser(userId, updatedInfo);
+  }
+
+  @Patch('update-password')
+  @UseGuards(AuthGuard)
+  updatePassword(
+    @Req() request: Request,
+    @Body() updatedPassword: UpdatePasswordDto,
+  ) {
+    const userId = request['user'].sub;
+    return this.usersService.updatePassword(userId, updatedPassword);
   }
 }

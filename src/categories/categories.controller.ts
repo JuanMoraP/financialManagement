@@ -8,6 +8,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -15,6 +16,7 @@ import {
 import { CategoriesService } from './categories.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update.category.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -41,6 +43,21 @@ export class CategoriesController {
   ) {
     const userId = request['user'].sub;
     return await this.categoriesService.createCategory(userId, newCategorie);
+  }
+
+  @Patch('/updateCategory/:id')
+  @UseGuards(AuthGuard)
+  async updateCategory(
+    @Req() request: Request,
+    @Body() updateInfo: UpdateCategoryDto,
+    @Param('id', ParseUUIDPipe) categoryId: string,
+  ) {
+    const userId = request['user'].sub;
+    return await this.categoriesService.updateCategory(
+      userId,
+      categoryId,
+      updateInfo,
+    );
   }
 
   @Delete('delete-category/:id')

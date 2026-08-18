@@ -13,7 +13,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   //Guardian para solo admin, hace falta que no reciba la contraseña
-  @Get()
+  @Get('get-all-users')
   @UseGuards(AuthGuard)
   getAllUsers() {
     return this.usersService.getAllUsers();

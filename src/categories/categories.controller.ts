@@ -21,13 +21,13 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   //Admin
-  @Get()
+  @Get('get-all-categories')
   async getAllCategories() {
     return this.categoriesService.getAllCategories();
   }
 
   //User
-  @Get(':id')
+  @Get('get-my-categories/:id')
   async getMyCategories(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoriesService.getMyCategories(id);
   }
@@ -44,6 +44,7 @@ export class CategoriesController {
   }
 
   @Delete('delete-category/:id')
+  @UseGuards(AuthGuard)
   async deleteCategory(
     @Req() request: Request,
     @Param('id', ParseUUIDPipe) categoryId: string,

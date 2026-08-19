@@ -1,8 +1,19 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import type { Request } from 'express';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { GetTransactionQueryDto } from './dto/get-transaction-with-query.dto';
 
 @Controller('transaction')
 export class TransactionController {
@@ -16,5 +27,21 @@ export class TransactionController {
   ) {
     const userId = request['user'].sub;
     return this.transactionService.createTransaction(userId, transactionInfo);
+  }
+
+  @Get(':id')
+  @UseGuards(AuthGuard)
+  getTransactionById(@Param('id', ParseUUIDPipe) transactionId: string) {
+    return this.transactionService.getTransactionById(transactionId);
+  }
+
+  @Get('allTransactions')
+  @UseGuards(AuthGuard)
+  getAllTransactions(
+    @Query() queryInfo: GetTransactionQueryDto,
+    @Req() request: Request,
+  ) {
+    const userId = request['user'].sub;
+    return this.transactionService.getAllTransactions(queryInfo, userId);
   }
 }

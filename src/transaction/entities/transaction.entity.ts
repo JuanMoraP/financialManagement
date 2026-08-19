@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -15,7 +16,7 @@ export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @CreateDateColumn()
   date!: Date;
 
   @Column()
@@ -24,20 +25,20 @@ export class Transaction {
   @Column({ type: 'enum', enum: TransactionEnum })
   transactionType!: TransactionEnum; //enum
 
-  @Column()
+  @Column('decimal', { precision: 10, scale: 2 })
   amount!: number;
 
-  @Column()
-  currentBalance!: number;
+  @ManyToOne(() => FinancialProfile, (finProfile) => finProfile.trnsactionId)
+  @JoinColumn()
+  financialProfileId!: FinancialProfile;
+
+  @ManyToOne(() => Category, (category) => category.transaction)
+  @JoinColumn()
+  categoryId!: Category;
 
   @CreateDateColumn()
   createdAt!: Date;
 
-  @ManyToOne(() => FinancialProfile, (finProfile) => finProfile.trnsactionId)
-  @JoinColumn()
-  financialProfile!: FinancialProfile;
-
-  @ManyToOne(() => Category, (category) => category.transaction)
-  @JoinColumn()
-  category!: Category;
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

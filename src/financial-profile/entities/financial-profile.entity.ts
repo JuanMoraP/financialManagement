@@ -16,19 +16,19 @@ export class FinancialProfile {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   initialAmount!: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   currentAmount!: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   currentIncome!: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   currentSpent!: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   monthlySavingsGoal!: number;
 
   @Column({ default: CurrencyEnum.USD })
@@ -44,6 +44,6 @@ export class FinancialProfile {
   @JoinColumn()
   userId!: User;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.financialProfile)
+  @OneToMany(() => Transaction, (transaction) => transaction.financialProfileId)
   trnsactionId!: Transaction[];
 }

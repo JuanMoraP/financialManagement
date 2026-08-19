@@ -17,7 +17,7 @@ export class Category {
   @Column({ unique: true })
   name!: string;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.category)
+  @OneToMany(() => Transaction, (transaction) => transaction.categoryId)
   transaction!: Transaction[];
 
   @ManyToOne(() => User, (user) => user.category, { nullable: true })

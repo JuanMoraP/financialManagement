@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
@@ -15,6 +12,7 @@ import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import type { Request } from 'express';
 
 @Controller('users')
 export class UsersController {

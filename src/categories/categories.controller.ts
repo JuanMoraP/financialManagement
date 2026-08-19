@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
@@ -17,6 +14,7 @@ import { CategoriesService } from './categories.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update.category.dto';
+import type { Request } from 'express';
 
 @Controller('categories')
 export class CategoriesController {

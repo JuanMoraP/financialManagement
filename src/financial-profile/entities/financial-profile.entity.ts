@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/users.entity';
 import { Transaction } from '../../transaction/entities/transaction.entity';
+import { CurrencyEnum } from '../../common/enum/currency.enum';
 
 @Entity({ name: 'financialProfile' })
 export class FinancialProfile {
@@ -28,13 +29,10 @@ export class FinancialProfile {
   currentSpent!: number;
 
   @Column({ default: 0 })
-  montlySavingsGoal!: number;
+  monthlySavingsGoal!: number;
 
-  @Column({ default: 0 })
-  montlySavingsPercentage!: string;
-
-  @Column({ nullable: true })
-  currency!: string;
+  @Column({ default: CurrencyEnum.USD })
+  currency!: CurrencyEnum;
 
   @Column({ nullable: true })
   preferredBank!: string;

@@ -26,25 +26,35 @@ export class TransactionRepository {
     await queryRunner.startTransaction();
 
     try {
-      // const financialProfileRepository =
-      //   queryRunner.manager.getRepository(FinancialProfile);
-      // const transactionRepository =
-      //   queryRunner.manager.getRepository(Transaction);
+      const financialProfileRepository =
+        queryRunner.manager.getRepository(FinancialProfile);
+      const transactionRepository =
+        queryRunner.manager.getRepository(Transaction);
 
-      const financialPro = await this.financialProfile.findOne({
+      // const financialPro = await this.financialProfile.findOne({
+      //   where: { userId: { id: userId } },
+      // });
+      const financialPro = await financialProfileRepository.findOne({
         where: { userId: { id: userId } },
       });
       if (!financialPro)
         throw new NotFoundException('El perfil del usuario no fue encontrado');
 
-      const newTransaction = this.transactionRepository.create({
+      // const newTransaction = this.transactionRepository.create({
+      //   description: transactionInfo.description,
+      //   transactionType: transactionInfo.transactionType,
+      //   amount: transactionInfo.amount,
+      //   financialProfileId: { id: financialPro.id } as FinancialProfile,
+      //   categoryId: { id: transactionInfo.categoryId } as Category,
+      // });
+      const newTransaction = transactionRepository.create({
         description: transactionInfo.description,
         transactionType: transactionInfo.transactionType,
         amount: transactionInfo.amount,
         financialProfileId: { id: financialPro.id } as FinancialProfile,
         categoryId: { id: transactionInfo.categoryId } as Category,
       });
-      await this.transactionRepository.save(newTransaction);
+      await transactionRepository.save(newTransaction);
 
       if (transactionInfo.transactionType === TransactionEnum.Outgoing)
         financialPro.currentAmount =
@@ -56,14 +66,15 @@ export class TransactionRepository {
       financialPro.currentSpent =
         Number(financialPro.currentSpent) + Number(transactionInfo.amount);
 
-      await this.financialProfile.save(financialPro);
+      await financialProfileRepository.save(financialPro);
+
+      await queryRunner.commitTransaction();
+      return 'Transacción guardada con éxito';
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
       await queryRunner.release();
     }
-
-    return 'Transacción guardada con éxito';
   }
 }

@@ -123,4 +123,46 @@ export class TransactionRepository {
 
     return { transactions, total };
   }
+
+  async deleteTransaction(transactionId: string, userId: string) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const transactionRepo = queryRunner.manager.getRepository(Transaction);
+      const profileRepo = queryRunner.manager.getRepository(FinancialProfile);
+
+      const transaction = await transactionRepo.findOne({
+        where: { id: transactionId },
+        relations: { financialProfileId: true }, // para poder revertir el balance
+      });
+      if (!transaction)
+        throw new NotFoundException('Transacción no encontrada');
+
+      const profile = await profileRepo.findOne({
+        where: { userId: { id: userId } },
+      });
+      if (!profile)
+        throw new NotFoundException('Perfil financiero no encontrado');
+
+      // revertir el efecto: si era gasto, se lo devuelves; si era ingreso, se lo restas
+      if (transaction.transactionType === TransactionEnum.Outgoing)
+        profile.currentAmount =
+          Number(profile.currentAmount) + Number(transaction.amount);
+      if (transaction.transactionType === TransactionEnum.Incoming)
+        profile.currentAmount =
+          Number(profile.currentAmount) - Number(transaction.amount);
+
+      await profileRepo.save(profile);
+      await transactionRepo.softDelete(transactionId); // ← el cambio clave, no delete()
+
+      await queryRunner.commitTransaction();
+      return 'Transacción eliminada correctamente';
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }

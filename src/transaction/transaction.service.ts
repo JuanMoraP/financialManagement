@@ -21,4 +21,8 @@ export class TransactionService {
   getAllTransactions(queryInfo: GetTransactionQueryDto, userId: string) {
     return this.transactionRepository.getAllTransactions(queryInfo, userId);
   }
+
+  deleteTransaction(transactionId: string, userId: string) {
+    return this.transactionRepository.deleteTransaction(transactionId, userId);
+  }
 }

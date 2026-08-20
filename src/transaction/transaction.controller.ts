@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -43,5 +44,15 @@ export class TransactionController {
   ) {
     const userId = request['user'].sub;
     return this.transactionService.getAllTransactions(queryInfo, userId);
+  }
+
+  @Delete('delete-transaction/:id')
+  @UseGuards(AuthGuard)
+  deleteTransactions(
+    @Param('id', ParseUUIDPipe) transactionId: string,
+    @Req() request: Request,
+  ) {
+    const userId = request['user'].sub;
+    return this.transactionService.deleteTransaction(transactionId, userId);
   }
 }

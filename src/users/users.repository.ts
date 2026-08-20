@@ -10,12 +10,15 @@ import { Repository } from 'typeorm';
 import { SignUpDto } from '../auth/dto/signup.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FinancialProfileService } from '../financial-profile/financial-profile.service';
+import { RefreshToken } from '../auth/entities/refresh-token.entity';
 
 @Injectable()
 export class UsersRepository {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly financialProfileService: FinancialProfileService,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   async getAllUsers() {
@@ -76,5 +79,14 @@ export class UsersRepository {
   async updatePassword(user: User) {
     await this.usersRepository.save(user);
     return 'Contraseña modificada exitosamente';
+  }
+
+  async inactiveUser(userId: string) {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    user.isActive = false;
+    await this.usersRepository.save(user);
+    await this.refreshTokenRepository.delete({ userId: { id: userId } });
+    return 'Usuario desactivado con éxito';
   }
 }

@@ -8,12 +8,12 @@ import { TokenModule } from '../auth/jwt.module';
 import { FinancialProfileService } from '../financial-profile/financial-profile.service';
 import { FinancialProfileRepository } from '../financial-profile/financial-profile.repository';
 import { FinancialProfile } from '../financial-profile/entities/financial-profile.entity';
+import { RefreshToken } from '../auth/entities/refresh-token.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, FinancialProfile, RefreshToken]),
     TokenModule,
-    TypeOrmModule.forFeature([FinancialProfile]),
   ],
   controllers: [UsersController],
   providers: [

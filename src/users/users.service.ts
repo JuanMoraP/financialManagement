@@ -54,4 +54,8 @@ export class UsersService {
     user.password = hashedPassword;
     return await this.usersRepository.updatePassword(user);
   }
+
+  async inactiveUser(userId: string) {
+    return this.usersRepository.inactiveUser(userId);
+  }
 }

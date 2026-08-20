@@ -82,6 +82,7 @@ export class TransactionRepository {
   async getTransacationById(transactionId: string) {
     const transaction = await this.transactionRepository.findOne({
       where: { id: transactionId },
+      relations: { financialProfileId: true },
     });
     if (!transaction)
       throw new NotFoundException(

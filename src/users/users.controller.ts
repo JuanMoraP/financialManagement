@@ -55,4 +55,11 @@ export class UsersController {
     const userId = request['user'].sub;
     return this.usersService.updatePassword(userId, updatedPassword);
   }
+
+  @Patch('inactive-user')
+  @UseGuards(AuthGuard)
+  inactiveUser(@Req() request: Request) {
+    const userId = request['user'].sub;
+    return this.usersService.inactiveUser(userId);
+  }
 }

@@ -14,8 +14,11 @@ export class TransactionService {
     );
   }
 
-  getTransactionById(transactionId: string) {
-    return this.transactionRepository.getTransacationById(transactionId);
+  getTransactionById(transactionId: string, userId: string) {
+    return this.transactionRepository.getTransacationById(
+      transactionId,
+      userId,
+    );
   }
 
   getAllTransactions(queryInfo: GetTransactionQueryDto, userId: string) {

@@ -83,15 +83,23 @@ export class TransactionRepository {
     }
   }
 
-  async getTransacationById(transactionId: string) {
+  async getTransacationById(transactionId: string, userId: string) {
     const transaction = await this.transactionRepository.findOne({
       where: { id: transactionId },
-      relations: { financialProfileId: true },
+      relations: { financialProfileId: { userId: true } },
     });
+
     if (!transaction)
       throw new NotFoundException(
         'Esta transacción no fue encontrada en la base de datos',
       );
+
+    if (transaction.financialProfileId.userId.id !== userId) {
+      throw new ForbiddenException(
+        'No tiene permisos para ver esta transacción',
+      );
+    }
+
     return transaction;
   }
 

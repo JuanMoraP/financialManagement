@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -135,10 +139,15 @@ export class TransactionRepository {
 
       const transaction = await transactionRepo.findOne({
         where: { id: transactionId },
-        relations: { financialProfileId: true }, // para poder revertir el balance
+        relations: { financialProfileId: { userId: true } }, // para poder revertir el balance
       });
       if (!transaction)
         throw new NotFoundException('Transacción no encontrada');
+
+      if (transaction.financialProfileId.userId.id !== userId)
+        throw new ForbiddenException(
+          'No tiene permisos para eliminar esta transacción',
+        );
 
       const profile = await profileRepo.findOne({
         where: { userId: { id: userId } },

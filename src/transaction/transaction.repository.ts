@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -11,6 +12,7 @@ import { FinancialProfile } from '../financial-profile/entities/financial-profil
 import { Category } from '../categories/entities/categories.entity';
 import { TransactionEnum } from '../common/enum/transaction.enum';
 import { GetTransactionQueryDto } from './dto/get-transaction-with-query.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 @Injectable()
 export class TransactionRepository {
@@ -176,6 +178,94 @@ export class TransactionRepository {
 
       await queryRunner.commitTransaction();
       return 'Transacción eliminada correctamente';
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  //debemos crear una función para actualizar una transacción, que reciba el id de la transacción, el id del usuario y un objeto con los campos a actualizar. La función debe validar que la transacción exista y que pertenezca al usuario, y luego actualizar los campos permitidos (description, transactionType, amount, categoryId). Además, debe ajustar el currentAmount del perfil financiero según el cambio en el monto de la transacción.
+  async updateTransaction(
+    userId: string,
+    transactionId: string,
+    updateInfo: UpdateTransactionDto,
+  ) {
+    if (!updateInfo || Object.keys(updateInfo).length === 0) {
+      throw new BadRequestException(
+        'Debes enviar al menos un campo para actualizar',
+      );
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const transactionRepo = queryRunner.manager.getRepository(Transaction);
+      const profileRepo = queryRunner.manager.getRepository(FinancialProfile);
+
+      const transaction = await transactionRepo.findOne({
+        where: { id: transactionId },
+        relations: { financialProfileId: { userId: true } },
+      });
+
+      if (!transaction) {
+        throw new NotFoundException('Transacción no encontrada');
+      }
+
+      if (transaction.financialProfileId.userId.id !== userId) {
+        throw new ForbiddenException(
+          'No tiene permisos para actualizar esta transacción',
+        );
+      }
+
+      const profile = await profileRepo.findOne({
+        where: { userId: { id: userId } },
+      });
+
+      if (!profile) {
+        throw new NotFoundException('Perfil financiero no encontrado');
+      }
+
+      const oldAmount = Number(transaction.amount);
+      const oldType = transaction.transactionType;
+
+      if (oldType === TransactionEnum.Outgoing) {
+        profile.currentAmount = Number(profile.currentAmount) + oldAmount;
+      }
+
+      if (oldType === TransactionEnum.Incoming) {
+        profile.currentAmount = Number(profile.currentAmount) - oldAmount;
+      }
+
+      profile.currentSpent = Number(profile.currentSpent) - oldAmount;
+
+      Object.assign(transaction, updateInfo);
+
+      if (updateInfo.categoryId !== undefined) {
+        transaction.categoryId = { id: updateInfo.categoryId } as Category;
+      }
+
+      const newAmount = Number(transaction.amount);
+      const newType = transaction.transactionType;
+
+      if (newType === TransactionEnum.Outgoing) {
+        profile.currentAmount = Number(profile.currentAmount) - newAmount;
+      }
+
+      if (newType === TransactionEnum.Incoming) {
+        profile.currentAmount = Number(profile.currentAmount) + newAmount;
+      }
+
+      profile.currentSpent = Number(profile.currentSpent) + newAmount;
+
+      await transactionRepo.save(transaction);
+      await profileRepo.save(profile);
+
+      await queryRunner.commitTransaction();
+      return 'Transacción actualizada correctamente';
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

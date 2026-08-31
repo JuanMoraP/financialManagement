@@ -13,6 +13,7 @@ import { Type } from 'class-transformer';
 
 export class GetTransactionQueryDto {
   @IsOptional()
+  @Type(() => Date)
   @IsDate()
   date?: Date;
 

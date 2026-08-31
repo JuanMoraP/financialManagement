@@ -59,4 +59,19 @@ export class TransactionController {
     const userId = request['user'].sub;
     return this.transactionService.deleteTransaction(transactionId, userId);
   }
+
+  @Post('update-transaction/:id')
+  @UseGuards(AuthGuard)
+  updateTransaction(
+    @Param('id', ParseUUIDPipe) transactionId: string,
+    @Req() request: Request,
+    @Body() updateInfo: CreateTransactionDto,
+  ) {
+    const userId = request['user'].sub;
+    return this.transactionService.updateTransaction(
+      userId,
+      transactionId,
+      updateInfo,
+    );
+  }
 }

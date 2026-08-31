@@ -28,4 +28,16 @@ export class TransactionService {
   deleteTransaction(transactionId: string, userId: string) {
     return this.transactionRepository.deleteTransaction(transactionId, userId);
   }
+
+  updateTransaction(
+    transactionId: string,
+    userId: string,
+    transactionInfo: CreateTransactionDto,
+  ) {
+    return this.transactionRepository.updateTransaction(
+      userId,
+      transactionId,
+      transactionInfo,
+    );
+  }
 }

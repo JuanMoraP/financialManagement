@@ -105,6 +105,33 @@ export class TransactionRepository {
     return transaction;
   }
 
+  async getTransactionsByCategory(categoryId: string, userId: string) {
+    const financialProfile = await this.financialProfileRepository.findOne({
+      where: { userId: { id: userId } },
+    });
+    if (!financialProfile)
+      throw new NotFoundException('Perfil financiero no encontrado');
+
+    const transactions = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.financialProfileIdId = :financialProfileId', {
+        financialProfileId: financialProfile.id,
+      })
+      .andWhere('transaction.categoryIdId = :categoryId', { categoryId })
+      .getMany();
+
+    const totalResult = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .select('COALESCE(SUM(transaction.amount), 0)', 'total')
+      .where('transaction.financialProfileIdId = :financialProfileId', {
+        financialProfileId: financialProfile.id,
+      })
+      .andWhere('transaction.categoryIdId = :categoryId', { categoryId })
+      .getRawOne<{ total: string }>();
+
+    return { transactions, total: Number(totalResult?.total ?? 0) };
+  }
+
   async getAllTransactions(queryInfo: GetTransactionQueryDto, userId: string) {
     const { date, transactionType, category, page, limit } = queryInfo;
     const currentPage = page ?? 1;
@@ -186,7 +213,6 @@ export class TransactionRepository {
     }
   }
 
-  //debemos crear una función para actualizar una transacción, que reciba el id de la transacción, el id del usuario y un objeto con los campos a actualizar. La función debe validar que la transacción exista y que pertenezca al usuario, y luego actualizar los campos permitidos (description, transactionType, amount, categoryId). Además, debe ajustar el currentAmount del perfil financiero según el cambio en el monto de la transacción.
   async updateTransaction(
     userId: string,
     transactionId: string,

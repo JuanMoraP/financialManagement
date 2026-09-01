@@ -40,6 +40,19 @@ export class TransactionController {
     return this.transactionService.getTransactionById(transactionId, userId);
   }
 
+  @Get('category/:categoryId')
+  @UseGuards(AuthGuard)
+  getTransactionsByCategory(
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
+    @Req() request: Request,
+  ) {
+    const userId = request['user'].sub;
+    return this.transactionService.getTransactionsByCategory(
+      categoryId,
+      userId,
+    );
+  }
+
   @Get('allTransactions')
   @UseGuards(AuthGuard)
   getAllTransactions(

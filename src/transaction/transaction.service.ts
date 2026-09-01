@@ -21,6 +21,13 @@ export class TransactionService {
     );
   }
 
+  getTransactionsByCategory(categoryId: string, userId: string) {
+    return this.transactionRepository.getTransactionsByCategory(
+      categoryId,
+      userId,
+    );
+  }
+
   getAllTransactions(queryInfo: GetTransactionQueryDto, userId: string) {
     return this.transactionRepository.getAllTransactions(queryInfo, userId);
   }

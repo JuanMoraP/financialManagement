@@ -1,98 +1,335 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📚 Financial Management — Documentación de API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> Base URL (producción): `https://tu-app.onrender.com`
+> Base URL (local): `http://localhost:3000`
+> Documentación interactiva (Swagger): `/`
+>
+> Para rutas protegidas, agregar en los headers:
+> `Authorization: Bearer <accessToken>`
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## ⚠️ Notas importantes
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Las rutas marcadas con 🔒 requieren `accessToken` JWT en el header.
+- Los ids tienen formato UUID: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
+- El `accessToken` expira a los 15 minutos — usar `POST /auth/refresh` para renovarlo.
 
-## Project setup
+---
+
+---
+
+## 🛠️ Instalación y ejecución en local
+
+### 1. Clonar y preparar el proyecto
 
 ```bash
-$ npm install
+git clone https://github.com/JuanMoraP/financialManagement.git
+cd financialManagement
+npm install
 ```
 
-## Compile and run the project
+### 2. Configurar la base de datos — dos opciones
+
+**Opción A — Conectarse directo a Supabase (la más simple, recomendada para empezar)**
+
+No requiere instalar Postgres en tu máquina. Solo necesitas la connection string de tu proyecto de Supabase (Dashboard → Settings → Database → Connection string), y pegarla en `DATABASE_URL` dentro de tu `.env.development`.
+
+```env
+DATABASE_URL=postgresql://usuario:password@host-de-supabase:5432/postgres
+```
+
+> Ventaja: mismos datos que usas siempre, sin duplicar nada. Desventaja: necesitas conexión a internet para desarrollar.
+
+**Opción B — PostgreSQL local (para trabajar sin conexión a internet)**
+
+Requiere tener Postgres corriendo en tu propia máquina — dos formas de lograrlo:
+
+- **Con Docker** (recomendada si ya tienes Docker instalado): usar el `docker-compose.yaml` de este proyecto para levantar un Postgres local con un solo comando — ver la Guía Práctica de Docker, Parte 8, para el archivo completo.
+  ```bash
+  docker compose up -d postgres-db
+  ```
+- **Instalación nativa**: instalar PostgreSQL directamente en tu sistema operativo (postgresql.org/download), crear una base de datos vacía, y usar sus credenciales locales.
+
+En cualquiera de los dos casos, tu `DATABASE_URL` en `.env.development` apunta a `localhost`:
+```env
+DATABASE_URL=postgresql://postgres:tu_password@localhost:5432/financial_management
+```
+
+> Diferencia clave: la base de datos de Supabase y una de Postgres local son dos bases de datos **completamente separadas** — no comparten datos entre sí. Si usas la Opción B, empiezas con una base de datos vacía y tienes que correr las migraciones ahí (ver paso 4) para crear las tablas.
+
+### 3. Variables de entorno
+
+Copia `.env.example` a `.env.development` y completa los valores:
+```bash
+cp .env.example .env.development
+```
+Necesitas como mínimo: `DATABASE_URL` (paso 2), `JWT_ACCESS_SECRET` y `JWT_REFRESH_SECRET` (genera cada uno con `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`).
+
+### 4. Correr las migraciones
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+NODE_ENV=development npm run migration:run
 ```
+> Necesario siempre que uses una base de datos nueva y vacía (Opción B) — si usas Supabase (Opción A) con datos ya existentes, probablemente ya estén aplicadas.
 
-## Run tests
+### 5. Levantar el proyecto
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
+La API queda disponible en `http://localhost:3000`, y la documentación interactiva de Swagger en `http://localhost:3000/`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🔐 AUTH
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### POST `/auth/signup`
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+**Acceso:** Público
+
+**Body:**
+```json
+{
+  "name": "Ana García",
+  "age": 28,
+  "email": "ana.garcia@email.com",
+  "password": "Pass123!$",
+  "confirmPassword": "Pass123!$",
+  "birthdate": "1996-05-14",
+  "country": "Colombia",
+  "phone": "3001234567"
+}
+```
+> La contraseña debe tener entre 8 y 15 caracteres, con al menos una mayúscula, una minúscula, un número y un símbolo (`!@#$%^&*`).
+
+---
+
+### POST `/auth/login`
+
+**Acceso:** Público
+
+**Body:**
+```json
+{
+  "email": "ana.garcia@email.com",
+  "password": "Pass123!$"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Respuesta:**
+```json
+{
+  "accessToken": "eyJhbGc...",
+  "refreshToken": "eyJhbGc..."
+}
+```
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+### POST `/auth/refresh`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Renueva el `accessToken`. Rota el `refreshToken` (el anterior queda inválido).
 
-## Support
+**Acceso:** Público (requiere `refreshToken` válido)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Body:**
+```json
+{ "refreshToken": "eyJhbGc..." }
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### POST `/auth/logout` 🔒
 
-## License
+Invalida el `refreshToken` guardado del usuario.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Body:** No requiere.
+
+---
+
+## 👤 USERS
+
+### GET `/users/get-all-users` 🔒
+
+Obtener todos los usuarios.
+
+---
+
+### GET `/users/email/:email` 🔒
+
+**Params:** `email` (string)
+
+---
+
+### GET `/users/:id` 🔒
+
+**Params:** `id` (UUID)
+
+---
+
+### PATCH `/users/update-user` 🔒
+
+Actualizar los datos del usuario autenticado (no incluye contraseña).
+
+**Body:** Campos opcionales, según `UpdateUserDto`.
+
+---
+
+### PATCH `/users/update-password` 🔒
+
+**Body:**
+```json
+{
+  "currentPassword": "Pass123!$",
+  "newPassword": "NewPass456!$",
+  "confirmPassword": "NewPass456!$"
+}
+```
+> `newPassword` y `confirmPassword` deben cumplir los mismos requisitos de complejidad que la contraseña de registro.
+
+---
+
+### PATCH `/users/inactive-user` 🔒
+
+Desactiva la cuenta del usuario autenticado. **Body:** No requiere.
+
+---
+
+## 🗂️ CATEGORIES
+
+### GET `/categories/get-all-categories`
+
+Categorías por defecto (globales). **Acceso:** Público
+
+---
+
+### GET `/categories/get-my-categories/:id`
+
+Categorías del usuario (por defecto + propias).
+
+**Params:** `id` (UUID del usuario)
+
+---
+
+### POST `/categories/create-categorie` 🔒
+
+**Body:**
+```json
+{ "name": "Mascotas" }
+```
+
+---
+
+### PATCH `/categories/updateCategory/:id` 🔒
+
+**Params:** `id` (UUID de la categoría)
+
+**Body:**
+```json
+{ "name": "Nuevo nombre" }
+```
+
+---
+
+### DELETE `/categories/delete-category/:id` 🔒
+
+**Params:** `id` (UUID de la categoría)
+
+---
+
+## 💰 FINANCIAL PROFILE
+
+### GET `/financial-profile/my-financial-pro` 🔒
+
+---
+
+### PATCH `/financial-profile/update-financial-profile` 🔒
+
+**Body:** Todos los campos opcionales.
+```json
+{
+  "initialAmount": 2500,
+  "currentAmount": 3200,
+  "currentIncome": 4800,
+  "currentSpent": 2100,
+  "monthlySavingsGoal": 500,
+  "currency": "COP",
+  "preferredBank": "Banco de Bogotá"
+}
+```
+
+---
+
+## 💸 TRANSACTIONS
+
+### POST `/transaction/create-transaction` 🔒
+
+**Body:**
+```json
+{
+  "description": "Pago de supermercado",
+  "transactionType": "outgoing",
+  "amount": 125.50,
+  "categoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+```
+> `transactionType`: `"incoming"` o `"outgoing"`.
+
+---
+
+### GET `/transaction/:id` 🔒
+
+**Params:** `id` (UUID)
+
+---
+
+### GET `/transaction/category/:categoryId` 🔒
+
+Transacciones de una categoría específica.
+
+**Params:** `categoryId` (UUID)
+
+---
+
+### GET `/transaction/allTransactions` 🔒
+
+**Query params:**
+| Param | Tipo | Descripción |
+|---|---|---|
+| date | string (fecha) | Filtrar por fecha |
+| transactionType | string | `"incoming"` o `"outgoing"` |
+| category | UUID | Filtrar por categoría |
+| page | number | Página (default: 1) |
+| limit | number | Resultados por página (máx: 10) |
+
+---
+
+### DELETE `/transaction/delete-transaction/:id` 🔒
+
+Soft delete — revierte el efecto sobre el balance del perfil.
+
+**Params:** `id` (UUID)
+
+---
+
+### POST `/transaction/update-transaction/:id` 🔒
+
+Actualizar una transacción existente.
+
+**Params:** `id` (UUID)
+
+**Body:**
+```json
+{
+  "description": "Pago de supermercado",
+  "transactionType": "outgoing",
+  "amount": 130.00,
+  "categoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+```
+
+---
+
+## 🚧 Próximamente
+
+- Reportes: gasto mensual, balance ingresos vs. gastos.

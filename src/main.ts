@@ -29,7 +29,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('', app, document, {
     customSiteTitle: 'Financial Management Docs',
   });
 
@@ -37,8 +37,6 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
 
   console.log(`Aplicación corriendo en puerto ${port}`);
-  console.log(
-    `Documentación Swagger disponible en http://localhost:${port}/api`,
-  );
+  console.log(`Documentación Swagger disponible en http://localhost:${port}`);
 }
 bootstrap();
